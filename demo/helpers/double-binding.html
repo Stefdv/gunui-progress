@@ -1,0 +1,14 @@
+<dom-module id="double-binding">
+        <template>
+          <style>
+            :host {display: inline-block;
+            }
+          </style>
+          {{<slot></slot>}}
+        </template>
+        <script>
+          Polymer({
+            is: 'double-binding'
+          });
+        </script>
+</dom-module>

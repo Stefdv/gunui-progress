@@ -1,0 +1,26 @@
+ <dom-module id="to-do">
+      <template>
+      <style>
+        @import url('https://fonts.googleapis.com/css?family=Rock+Salt');
+      </style>
+        <style>
+          :host {
+            display: block;
+          }
+          blockquote {
+            border-left: 5px solid rgba(255, 0, 0, 0.54);
+            font-family: 'Rock Salt', cursive;
+            padding-left: 10px;
+            margin-left: 1em;
+            color: blue;
+          }
+          span{color: #ff7575;font-weight: 600;}
+        </style>
+        <blockquote><span>Note to self</span>:&nbsp;<slot></slot></blockquote>
+      </template>
+      <script>
+        Polymer({
+          is: 'to-do'
+        });
+      </script>
+    </dom-module>

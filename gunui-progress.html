@@ -1,0 +1,201 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
+<link rel="import" href="../gunui-base/gunui-mixin-api.html">
+
+<dom-module id="gunui-progress">
+  <template>
+    <style>
+      :host {
+        display: block;
+        margin:var(--gunui-progress-margin,2px);
+      }
+      :host([hidden]) {
+        display: none !important;
+      }
+
+      paper-progress {
+        --paper-progress-height:var(--gunui-progress-height);
+        --paper-progress-active-color: var(--gunui-progress-active-color);
+        --paper-progress-secondary-color: var(--gunui-progress-secondary-color);
+        --paper-progress-container-color: var(--gunui-progress-container-color);
+        --paper-progress-transition-duration:var(--gunui-progress-transition-duration);
+        --paper-progress-transition-timing-function: var(--gunui-progress-transition-timing-function);
+        --paper-progress-transition-transition-delay: var(--gunui-progress-transition-transition-delay);
+        --paper-progress-indeterminate-cycle-duration: var(--gunui-progress-indeterminate-cycle-duration);
+      }
+    </style>
+   <paper-progress 
+      secondary-progress="[[secValue]]"
+      secondaryRatio="{{secRatio}}"
+      indeterminate="[[indeterminate]]"
+      disabled="[[disabled]]"
+      value="{{value}}"
+      min="[[min]]"
+      max="[[max]]"
+      step="[[step]]"
+      ratio="{{ratio}}"
+      >
+   </paper-progress>
+  </template>
+
+  <script>
+  if (!Polymer.Element) {
+    throw new Error(`Unexpected Polymer version ${Polymer.version}, expected v2.0.0 or later.`);
+   }
+    /**
+     * `gunui-progress`
+     * uses GunUi.MixinAPI ( gunui-mixin-api )
+     * requires <gunui-base> in your main file
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class GunuiProgress extends GunUi.MixinAPI(Polymer.Element) {
+      static get is() { return 'gunui-progress'; }
+      static get properties() {
+        return {
+          max:Number,
+          min:Number,
+          ratio:Number,
+          step:Number,
+          value:{
+            type:Number,
+            observer:'_valueChanged'
+          },
+
+          /**
+           * Use an indeterminate progress indicator.
+           */
+          indeterminate: {
+            type: Boolean,
+            value: true,
+          },
+
+          /**
+           * True if the progress is disabled.
+           */
+          disabled: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+          },
+          key:{
+            type:String,
+            value:'value'
+          },
+          /**
+           * The number that represents the current secondary progress.
+           */
+          secValue: {
+            type: Number,
+            value: 0
+          },
+
+          /**
+           * The secondary ratio
+           */
+          secRatio: {
+            type: Number,
+            readOnly: true
+          },
+          secSoul:{
+            type:String
+          },
+          secProp:{
+            type:String
+          },
+          secKey:{
+            type:String,
+            value:'value'
+          },
+          _msgId:{
+            type:String,
+            computed:'_computeMsgId(soul,prop)'
+          }
+        };
+      }
+      _computeMsgId(soul,prop){
+        return soul + '/' + prop
+      }
+      ready() {
+        super.ready();
+        
+      }
+      hasGun() {
+        if(this.soul && this._hasGun) { // at least give me that !
+          this.subscribe ? this._subscribe() : this._getInitialData();
+          if(this.secSoul){ this.subscribeSec ? this._subscribeSec() : this._getSecInitialData();}
+        } else {
+          GunUi.config.dev && console.info('You did not provide a soul!')
+        }
+      }
+
+      _valueChanged(value) {
+
+        console.log('_valueChanged ',value)
+        if(this.secValue) {
+          (value > this.secValue) ? this._tresholdReached() : this._normal()
+        }
+      }
+
+
+      _tresholdReached() {
+        this.fire(
+          'gunui-message',
+          {
+            id:this._msgId,
+            type:{warning:'treshold'},
+            msg:`Treshold for "${this.soul}/${this.prop}" exceeded by ${this.value - this.secValue} `,
+            soul:this.soul,
+            prop:this.prop,
+            params:{value:this.value,treshold:this.secValue}
+          }
+        )
+      }
+      _normal() {
+         this.fire(
+          'gunui-message',{type:{cancel:this._msgId}}
+        )
+      }
+
+      _getInitialData() {
+        GunUi.gun.get(this.soul).path(this.prop).val(data=>{
+          if(data) {
+            this.indeterminate = false;
+            this.value= data[this.key]
+          } else {
+            this.indeterminate = true;
+          }
+        })
+      }
+
+       _subscribe(){
+         GunUi.gun.get(this.soul).path(this.prop).on(data=>{
+           this.indeterminate = false;
+           this.value = data[this.key]
+ 
+        })
+      }
+
+      _getSecInitialData() {
+        GunUi.gun.get(this.secSoul).path(this.secProp).val(data=>{
+          if(data) {
+            this.secValue= data[this.secKey]
+          }
+        })
+      }
+
+      _subscribeSec(){
+         GunUi.gun.get(this.secSoul).path(this.secProp).on(data=>{
+          this.secValue= data[this.secKey]
+
+       })
+      }
+
+
+    }
+
+    window.customElements.define(GunuiProgress.is, GunuiProgress);
+  </script>
+</dom-module>
