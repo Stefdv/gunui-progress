@@ -13,8 +13,9 @@ Every gunui- element has just 2 required attributes "soul" and "prop" that will 
 
 ## But Why?
 If you don't fully understand the purpose of gunui take a look at some of the GunUi elements.
-* [gunui-button](https://stefdv.github.io/gunui-button/components/gunui-button/demo/index.html) Visualize a Boolean value in your Gun data
+* [gunui-button](https://stefdv.github.io/gunui-button/components/gunui-button/demo/index.html) Visual control of a Boolean value in your Gun data
 * [gunui-progress](https://stefdv.github.io/gunui-progress/components/gunui-progress/demo/index.html) Visualize a Numeric value in your Gun data
+* [gunui-slider](https://stefdv.github.io/gunui-slider/components/gunui-slider/demo/index.html) Visual control of a Numeric value in your Gun data.
 
 ## (Bower) Install gunui-button
 ( When Polymer 3 arrives we can skip the bower part, but for now...)
