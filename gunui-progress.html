@@ -63,7 +63,6 @@
             type:Number,
             observer:'_valueChanged'
           },
-
           /**
            * Use an indeterminate progress indicator.
            */
@@ -91,7 +90,6 @@
             type: Number,
             value: 0
           },
-
           /**
            * The secondary ratio
            */
@@ -118,7 +116,10 @@
       _computeMsgId(soul,prop){
         return soul + '/' + prop
       }
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
       hasGun() {
         if(this.soul && this._hasGun) { // at least give me that !
           this.subscribe ? this._subscribe() : this._getInitialData();
@@ -127,13 +128,15 @@
           GunUi.config.dev && console.info('You did not provide a soul!')
         }
       }
-
       _valueChanged(value) {
         if(this.secValue) {
           (value > this.secValue) ? this._tresholdReached() : this._normal()
         }
       }
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
       _tresholdReached() {
         this.fire(
           'gunui-message',
@@ -152,7 +155,6 @@
           'gunui-message',{type:{cancel:this._msgId}}
         )
       }
-
       _getInitialData() {
         GunUi.gun.get(this.soul).path(this.prop).val(data=>{
           if(data) {
@@ -163,15 +165,16 @@
           }
         })
       }
-
-       _subscribe(){
+      _subscribe(){
          GunUi.gun.get(this.soul).path(this.prop).on(data=>{
            this.indeterminate = false;
            this.value = data[this.key] || data;
+<<<<<<< HEAD
  
+=======
+>>>>>>> origin/master
         })
       }
-
       _getSecInitialData() {
         GunUi.gun.get(this.secSoul).path(this.secProp).val(data=>{
           if(data) {
@@ -179,11 +182,9 @@
           }
         })
       }
-
       _subscribeSec(){
          GunUi.gun.get(this.secSoul).path(this.secProp).on(data=>{
-          this.secValue= data[this.secKey]
-
+          this.secValue= data[this.secKey] || data;
        })
       }
     }
