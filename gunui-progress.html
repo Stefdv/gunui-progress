@@ -151,7 +151,7 @@
         GunUi.gun.get(this.soul).path(this.prop).val(data=>{
           if(data) {
             this.indeterminate = false;
-            this.value= data[this.key] || data;
+            this.value= data[this.key]
           } else {
             this.indeterminate = true;
           }
@@ -160,19 +160,19 @@
       _subscribe(){
          GunUi.gun.get(this.soul).path(this.prop).on(data=>{
            this.indeterminate = false;
-           this.value = data[this.key] || data;
+           this.value = data[this.key]
         })
       }
       _getSecInitialData() {
         GunUi.gun.get(this.secSoul).path(this.secProp).val(data=>{
           if(data) {
-            this.secValue= data[this.secKey] || data;
+            this.secValue= data[this.secKey]
           }
         })
       }
       _subscribeSec(){
          GunUi.gun.get(this.secSoul).path(this.secProp).on(data=>{
-          this.secValue= data[this.secKey] || data;
+          this.secValue= data[this.secKey]
        })
       }
     }
