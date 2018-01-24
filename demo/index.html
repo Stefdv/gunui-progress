@@ -12,9 +12,10 @@
     <link rel="import" href="../../paper-styles/color.html">
     <link rel="import" href="../../paper-styles/shadow.html">
     <link rel="import" href="../../iron-icon/iron-icon.html">
+    <link rel="import" href="../../gunui-slider/gunui-slider.html">
+    <link rel="import" href="../gunui-progress.html">
     <link rel="import" href="helpers.html">
     <link rel="import" href="gp-icons.html">
-    <link rel="import" href="../gunui-progress.html">
 
     <custom-style>
       <style is="custom-style" include="demo-pages-shared-styles">
@@ -84,29 +85,50 @@
     </custom-style>
   </head>
   <body>
+
     <gunui-base></gunui-base>
 
+    <div class="vertical-section-container centered">
+      <h3><iron-icon icon="my-guns:gunui"></iron-icon>- PROGRESS</h3>
+      <ul>
+        <li>A Gun wrapper around Polymers <a href="https://www.webcomponents.org/element/PolymerElements/paper-button/elements/paper-button" target="_blank">paper-progress</a></li>
+        <li>shows the changing value of a property in your data</li>
+        <li>stays in sync with your data in Gun</li>
+      </ul>
 
-
-      <div class="vertical-section-container centered">
-        <h3><iron-icon icon="my-guns:gunui"></iron-icon>- PROGRESS</h3>
-        <ul>
-          <li>A Gun wrapper around Polymers <a href="https://www.webcomponents.org/element/PolymerElements/paper-button/elements/paper-button" target="_blank">paper-progress</a></li>
-          <li>shows the changing value of a property in your data</li>
-          <li>stays in sync with your data in Gun</li>
-        </ul>
-
-        <demo-box class="centered-demo">
+       <h3>Data point</h3>
+        <p>A 'data-point' is a property somewhere in your gun-data. Suppose you have data like this</p>
+        <demo-box no-render>
           <template>
-            <dom-bind>
-              <template is="dom-bind">
-                <gunui-progress soul="Engines" prop="main.oil.temp" subscribe></gunui-progress>
-                <gunui-progress soul="Engines" prop="main.oil.temp" sec-soul="tresholds" sec-prop="engines.main.oil.temp" subscribe on-gunui-message="_message"></gunui-progress>
-              </template>
-            </dom-bind>
+          { engines:{
+              main:{
+                oil:  { pressure:40 , temp: 50, level:90},
+                fuel: { pressure:40 , temp: 50, level:90}
+              }}
           </template>
-        </demo-box>
+      </demo-box>
+
+      <p>gunui-progress can monitor these values and update it's own state.<br>Like with all GunUi elements...just give it a <span>soul,prop</span> and a <span>subscribe</span> attribute.
+
+      <demo-box class="centered-demo">
+        <template>
+          <gunui-progress soul="Engines" prop="main.oil.temp" subscribe></gunui-progress>
+        </template>
+      </demo-box>
+
+      <p>To demonstrate gunui=progress we use a `gunui-slider` to change the value 'oil temperature' in Gun so we can see the progress bar in action</p>
+      <demo-box class="centered-demo">
+        <template>
+          <gunui-slider soul="Engines" prop="main.oil.temp" instant></gunui-slider>
+        </template>
+      </demo-box>
       
+      <div class="note">
+      Styling stuff below, nothing gun related.<br>
+      ( although there are some styling differences compared to paper-button)
+      </div>
+
+
       </div>
 <script>
 let app = document.querySelector('dom-bind');
