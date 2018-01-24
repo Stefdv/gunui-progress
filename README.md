@@ -5,7 +5,7 @@ GunUi is a set of webcomponents that enables you - the frontend developer - to b
 
 
 ## GunUi-Progress
-`gunui-progress` is a Gun wrapper around [`paper-checkbox`](https://www.webcomponents.org/element/PolymerElements/paper-progress/elements/paper-progress)
+`gunui-progress` is a Gun wrapper around [`paper-progress`](https://www.webcomponents.org/element/PolymerElements/paper-progress/elements/paper-progress)
 
 #### Purpose of `gunui-progress`
 * Visual view a Numeric value in your Gun data.
