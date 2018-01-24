@@ -1,0 +1,323 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<!--
+  Assume user has allready loaded gun in its main file
+-->
+<script>
+(function(){
+   
+    function loadScript(url, callback) {
+      let script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = url;
+      script.onreadystatechange = callback;
+      script.onload = callback;
+      document.head.appendChild(script);
+    }
+
+    function loadScripts(urls, callback) {
+      let loadedCount = 0;
+      let multiCallback = () => {
+        loadedCount++;
+        if (loadedCount >= urls.length) {
+          callback.call(this, arguments);
+        }
+      };
+      for (let url of urls) {
+        loadScript(url, multiCallback);
+      }
+    }
+
+
+    if(typeof Gun !=='function') {
+
+      console.log('%cNOTE:You will have to load Gun with a script tag in your main file.\nI will use a cdn for now but i can not garanty that this is the latest version!',"color:red")
+      loadScript("https://rawgit.com/amark/gun/master/gun.js",()=>{
+        
+        if(typeof Gun =='function'){
+          console.log('Gun loaded');
+          loadScript("../../gunui-base/chains/gun-tag.js", () => {
+            console.log('All setup');
+            initGunUi()
+          });
+        }
+      })
+    } else {
+      return false
+    }
+
+    function initGunUi() {
+      class GunuiBase extends Polymer.Element {
+        static get is() { return 'gunui-base'; }
+        static get properties() {
+          return {
+          /**
+           * give it list with URL(s) to you Gun server(s)
+           * 
+           * like ' "http://my-gun-server/gun","http://my-gun-server/gun"'
+           * 
+           * Please note that if you set it as attribute you'll have to use JSON syntax '["<url>","<url>"]'
+           * @type {JSON Array}
+           */
+            peers:String,
+          /**
+           * Shows some explanations in console
+           * @type {Boolean}
+           */
+           help:{type:Boolean,value:false},
+            _peers:Array,
+            _hasGun:Boolean,
+            _hasGunTag:Boolean,
+            demo:Boolean
+          };
+        }
+
+        connectedCallback() {
+          super.connectedCallback();
+          if(this.peers) {
+            this.set('_peers',this.peers.replace(/'/g,'').split(','))
+          }
+          this._createNameSpace()
+        }
+
+        _createNameSpace() {
+        if(window.GunUi && typeof window.GunUi.gun == 'function'){
+          console.error('GunUi is already defined, are you sure you only placed one - and only one - <gunui-base></gunui-base> in your application?')
+        } else {
+          window.GunUi = {
+            config:{
+                peers:this._peers || null,
+                scope:this.mainscope,
+                dev:this.dev,
+                help:this.help
+              },
+              logs:{},
+              SCOPES:{},
+              SETS:{},
+              TAGS:{} 
+            }
+          };
+          this._setupGun();
+      }
+
+      _setupGun(){
+        GunUi.gun = this.demo ? Gun() : Gun({peers:this._peers})
+        this._hasGun = GunUi.gun instanceof Gun;
+        this._hasGunTag = (this._hasGun && Gun.chain.tag)
+        if(this._hasGun) {
+          if(this.help || this.demo) { 
+            let logColor = "color:blue;"
+            console.log(`%c---------- <${this.localName}> ----------`,logColor)
+            console.log("%cGun(%s) is available as `GunUi.gun`.\n",logColor,Gun.version);
+            console.log("%cIncluded modules: .path(), .open(), .load(), promise(), then(), .each(), .onward() ,valMapEnd()\n",logColor);
+            this._hasGunTag && 
+            console.log("%ctag(), untag(), tagged()",logColor)
+          }
+        }
+        this._setAdditionalChains();
+        this._hasGunTag && this._updateLocalGunUi()
+      }
+
+      _setAdditionalChains() {
+
+        Gun.chain.open = function(cb, opt, at){
+            opt = opt || {};
+            opt.doc = opt.doc || {};
+            opt.ids = opt.ids || {};
+            opt.any = opt.any || cb;
+            opt.ev = opt.ev || {off: function(){
+              Gun.obj.map(opt.ev.s, function(e){
+                if(e){ e.off() }
+              });
+              opt.ev.s = {};
+            }, s:{}}
+            return this.on(function(data, key, ctx, ev){
+              delete ((data = Gun.obj.copy(data))||{})._;
+              clearTimeout(opt.to);
+              opt.to = setTimeout(function(){
+                if(!opt.any){ return }
+                opt.any.call(opt.at.gun, opt.doc, opt.key, opt, opt.ev);
+                if(opt.off){
+                  opt.ev.off();
+                  opt.any = null;
+                }
+              }, opt.wait || 1);
+              opt.at = opt.at || ctx;
+              opt.key = opt.key || key;
+              opt.ev.s[this._.id] = ev;
+              if(Gun.val.is(data)){
+                if(!at){
+                  opt.doc = data;
+                } else {
+                  at[key] = data;
+                }
+                return;
+              }
+              var tmp = this, id;
+              Gun.obj.map(data, function(val, key){
+                if(!(id = Gun.val.rel.is(val))){
+                  (at || opt.doc)[key] = val;
+                  return;
+                }
+                if(opt.ids[id]){
+                  (at || opt.doc)[key] = opt.ids[id];
+                  return;
+                }
+                tmp.get(key).open(opt.any, opt, opt.ids[id] = (at || opt.doc)[key] = {});
+              });
+            })
+          }
+
+          Gun.chain.load = function(cb, opt, at){
+            (opt = opt || {}).off = !0;
+            return this.open(cb, opt, at);
+          }
+
+          Gun.chain.promise = function(cb) {
+            var gun = this, cb = cb || function(ctx) { return ctx };
+            return (new Promise(function(res, rej) {
+              gun.val(function(data, key){
+                res({put: data, get: key, gun: this});
+              });
+            })).then(cb);
+          };
+
+          Gun.chain.then = function(cb) {
+            return this.promise(function(res){
+              return cb? cb(res.put) : res.put;
+            });
+          };
+
+          Gun.chain.path = function(field, cb, opt){
+            var back = this, gun = back, tmp;
+            opt = opt || {}; opt.path = true;
+            if(gun === gun._.root){if(cb){cb({err: Gun.log("Can't do that on root instance.")})}return gun}
+            if(typeof field === 'string'){
+              tmp = field.split(opt.split || '.');
+              if(1 === tmp.length){
+                gun = back.get(field, cb, opt);
+                gun._.opt = opt;
+                return gun;
+              }
+              field = tmp;
+            }
+            if(field instanceof Array){
+              if(field.length > 1){
+                gun = back;
+                var i = 0, l = field.length;
+                for(i; i < l; i++){
+                  gun = gun.get(field[i], (i+1 === l)? cb : null, opt);
+                }
+                //gun.back = back; // TODO: API change!
+              } else {
+                gun = back.get(field[0], cb, opt);
+              }
+              gun._.opt = opt;
+              return gun;
+            }
+            if(!field && 0 != field){
+              return back;
+            }
+            gun = back.get(''+field, cb, opt);
+            gun._.opt = opt;
+            return gun;
+          }
+
+          Gun.chain.valMapEnd = function (cb, end) {
+            var n = function () {};
+            var count = 0;
+            var souls = [];
+            var gun = this;
+            cb = cb || n;
+            end = end || n;
+            gun.val(function (list) {
+              var args = Array.prototype.slice.call(arguments);
+              if(!list) {end.apply(this, args);} 
+              Gun.node.is(list, function (n, soul) {
+                count += 1;
+                souls.push(soul);
+              });
+              souls.forEach(function (soul) {   
+                gun.back(-1).get(soul).val(function (val, key) {
+                  count -= 1;
+                  cb.apply(this, arguments);
+                  if (!count) {end.apply(this, args);}
+                });
+              });
+            });
+            return gun;
+          };
+
+        Gun.chain.each = function () {
+          var each = this.map();
+          return this.val.apply(each, arguments)
+        };
+
+        Gun.chain.onward = function(cb, opt){
+          var gun = this;
+          cb = cb || function(){};
+          opt = (opt === true ? {full: true} : opt || {});
+
+          opt.ctx = opt.ctx || {};
+          opt.path = opt.path || [];
+
+          gun.on(function(change, field){
+            change = Gun.obj.copy(change); // due to the 'leak' bug
+            let o = Gun.obj.copy(opt);
+            o.path = opt.path.slice(0);
+            if(field){ o.path.push(field) }
+
+            Gun.obj.map(change, function(val, field){
+              if(Gun._.meta == field){ return }
+              if(Gun.obj.is(val)){
+                delete change[field];
+                let soul = Gun.val.rel.is(val);
+                let objectID = soul + field;
+                if(opt.ctx[objectID]){ return } // do not re-subscribe.
+                opt.ctx[objectID] = true; // unique subscribe!
+                if(field !== '_' && field!=='>') { 
+                   this.get(field).onward(cb, o); 
+                }
+                return;
+              }
+            }, gun);
+            if(Gun.obj.empty(change, Gun._.meta)){ return }
+            if(opt._ === false){ delete change._ }
+            cb(change, o.path);
+          }, !opt.full);
+          return gun;
+        }
+        GunUi.savenode = function(node) {
+          node = Gun.obj.copy(node);
+          node.soul=node._['#']
+          return node
+        }
+         
+      }
+
+      _updateLocalGunUi() {
+        GunUi.gun.getScopes()
+          .then(scopes => {
+            /* Are the scopes in the db the same as our local scopes ? */
+            GunUi.SCOPES = scopes ? Gun.obj.copy(scopes) : {};
+
+            /* if we have scopes, we should have the scope 'SETS/TAGS' */
+            GunUi.gun.get('SETS/TAGS').val(sets=> {
+                GunUi.SETS = sets ? Gun.obj.copy(sets) : {};
+            });
+
+            // if we have scopes, we should have the scope 'TAGS/TAGS'
+            GunUi.gun.get('TAGS/TAGS').val(tags=> {
+                GunUi.TAGS = tags ? Gun.obj.copy(tags) : {};
+            });
+          })
+      }
+
+
+
+    }
+
+    window.customElements.define(GunuiBase.is, GunuiBase);
+    }
+}());
+</script>

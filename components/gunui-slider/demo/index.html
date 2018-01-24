@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>gunui-slider demo</title>
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../../gunui-base/gunui-base.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+    <link rel="import" href="../../iron-icon/iron-icon.html">
+    <link rel="import" href="../../paper-styles/color.html">
+    <link rel="import" href="../../paper-styles/shadow.html">
+    <link rel="import" href="../../gunui-progress/gunui-progress.html">
+    <link rel="import" href="helpers.html">
+    <link rel="import" href="gp-icons.html">
+    <link rel="import" href="../gunui-slider.html">
+
+    <custom-style>
+      <style is="custom-style" include="demo-pages-shared-styles">
+      body {
+        font-size: 18px;
+        line-height:1.5;
+        
+
+      }
+      .centered {
+        max-width:800px;
+      }
+      .vertical-section {
+        background-color: white;
+        padding: 24px;
+        margin: 0 24px 24px 24px;
+        border-radius: 0.5rem;
+        @apply(--shadow-elevation-2dp);
+      }
+
+      a {margin:0 3px;text-decoration: none;}
+      .info {
+        font-size:larger;
+        --iron-icon-width:32px;
+        --iron-icon-height:32px;
+      }
+      gunui-slider {
+        max-width:350px;
+      }
+      span {
+          color: #690;
+          font-family: monospace;
+          font-weight: 800;
+        }
+      .row {
+       display: flex;
+       flex-wrap:wrap;
+
+      }
+      h3 {
+        margin-bottom:0;
+      }
+      h3 iron-icon {
+        margin-right:4px;
+        width:48px;height:48px;
+      }
+      .note {
+        border: 2px groove #d0cfcf6e;
+    padding: 18px;
+    text-align: center;
+      }
+      .thatsit {
+        margin:0;
+        color:steelblue;
+        font-size:larger;
+      }
+      </style>
+    </custom-style>
+  </head>
+  <body>
+
+    <gunui-base></gunui-base>
+
+    <div class="vertical-section-container centered">
+      <h3><iron-icon icon="my-guns:gunui"></iron-icon>- SLIDER</h3>
+
+        <ul>
+          <li>A Gun wrapper around Polymers <a href="https://www.webcomponents.org/element/PolymerElements/paper-slider/elements/paper-slider" target="_blank">paper-slider</a></li>
+          <li>controls a numeric value in your Gun data</li>
+          <li>state is in sync with your data in Gun</li>
+        </ul>
+
+        <h3>Data point</h3>
+        <p>A 'data-point' is a property somewhere in your gun-data. Suppose you have data like this</p>
+        <demo-box no-render>
+          <template>
+          { engines:{
+              main:{
+                oil:  { pressure:40 , temp: 50, level:90},
+                fuel: { pressure:40 , temp: 50, level:90}
+              }}
+          </template>
+        </demo-box>
+        <p>You can link a `gunui-slider` to "<prism-demo inline code="engines.main.oil.temp"></prism-demo>" by adding the attributes <span>soul="engines"</span> and <span>prop="main.oil.temp"</span>, the slider will control the value</p>
+        <demo-box>
+          <template>
+            <gunui-slider soul="Engines" prop="main.oil.temp" instant pin ></gunui-slider>
+            <gunui-slider soul="Engines" prop="main.oil.pressure" instant pin ></gunui-slider>
+            <gunui-slider soul="Engines" prop="main.oil.level" instant pin ></gunui-slider>
+          </template>
+        </demo-box>
+
+        <p>Here we are using `gunui-progress` elements to show the changing values<br>
+        As you can see, each progress bar is linked to the same <span>soul</span> and <span>prop</span> as the sliders in de previous example. This time we also added the <span>subscribe</span> attribute that will keep the progress in sync with gun</p>
+
+        <demo-box>
+          <template>
+          <div class="rotate">
+            <gunui-progress soul="Engines" prop="main.oil.temp" subscribe></gunui-progress>
+            <gunui-progress soul="Engines" prop="main.oil.pressure" subscribe></gunui-progress>
+            <gunui-progress soul="Engines" prop="main.oil.level" subscribe></gunui-progress>
+          </div>
+            <style>
+            gunui-progress {
+             --gunui-progress-height:10px;
+             --gunui-progress-active-color:var(--paper-green-500);
+            }
+            </style>
+
+          </template>
+        </demo-box>
+
+        <h3>Custom key</h3>
+        <p>Maybe sometimes you will need another key instead of the default 'value', like with Philips HUE ( that uses <span>lights.1.state.bri</span> just set the attribute <span>key="bri"</span> and now the slider will set <prism-demo code="{bri:30}"></prism-demo></p>
+        <demo-box>
+          <template>
+            <!-- will do gun.get('HUE').path("light.1.state").put( { value:50} ) -->
+            <gunui-slider soul="HUE" prop="light.1.state"></gunui-slider>
+
+            <!-- will do gun.get('HUE').path("light.1.state").put( { bri:50} )  -->      
+            <gunui-slider soul="Engines" prop="light.1.state" key="bri"></gunui-slider>
+        
+          </template>
+        </demo-box>
+
+  </div>
+ 
+  </body>
+</html>

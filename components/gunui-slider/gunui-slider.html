@@ -1,0 +1,288 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../paper-slider/paper-slider.html">
+<link rel="import" href="../gunui-base/gunui-mixin-api.html">
+
+<dom-module id="gunui-slider">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+      :host([hidden]) {
+        display: none !important;
+      }
+      paper-slider {
+        width:100%;
+        --paper-slider-height:var(--gunui-slider-height);
+        --paper-slider-active-color:var(--gunui-slider-active-color);
+        --paper-slider-secondary-color:var(--gunui-slider-secondary-color);
+        --paper-slider-disabled-active-color:var(--gunui-slider-disabled-active-color);
+        --paper-slider-disabled-secondary-color:var(--gunui-slider-disabled-secondary-color);
+      }
+    </style>
+    
+    <paper-slider 
+      min="[[min]]" 
+      max="[[max]]" 
+      step="[[step]]"
+      snaps="[[snaps]]"
+      value="{{value}}"
+      secondary-progress="[[secValue]]"
+      editable="[[editable]]"
+      immediate-value="{{immediateValue}}"
+      max-markers="[[maxMarkers]]"
+      expand="[[expand]]"
+      markers="[[markers]]"
+      dragging="{{dragging}}"
+      transiting="{{transiting}}"
+      pin="[[pin]]"></paper-slider>
+  </template>
+
+  <script>
+    if (!Polymer.Element) {
+    throw new Error(`Unexpected Polymer version ${Polymer.version}, expected v2.0.0 or later.`);
+   }
+    /**
+     * `gunui-slider`
+     * Visual control a numeric property in your Gun data
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class GunuiSlider extends GunUi.MixinAPI(Polymer.Element) {
+      static get is() { return 'gunui-slider'; }
+      static get properties() {
+        return {
+          instant:{
+            type:Boolean,
+            value:false
+          },
+          value:{
+            type:Number,
+            notify:true,
+            observer:'_valueChanged',
+          },
+          /**
+           * If true, the slider thumb snaps to tick marks evenly spaced based
+           * on the `step` property value.
+           */
+          snaps: {
+            type: Boolean,
+            value: false,
+            notify: true
+          },
+          max:Number,
+          min:Number,
+          /**
+           * If true, a pin with numeric value label is shown when the slider thumb
+           * is pressed. Use for settings for which users need to know the exact
+           * value of the setting.
+           */
+          pin: {
+            type: Boolean,
+            value: false,
+            notify: true
+          },
+          /**
+           * The number that represents the current secondary progress.
+           */
+          secValue: {
+            type: Number,
+            value: 0
+          },
+
+          /**
+           * If true, an input is shown and user can use it to set the slider value.
+           */
+          editable: {
+            type: Boolean,
+            value: false
+          },
+          /**
+           * The immediate value of the slider.  This value is updated while the user
+           * is dragging the slider.
+           */
+          immediateValue: {
+            type: Number,
+            notify: true,
+            observer:'_immediateValueChanged'
+          },
+          /**
+           * The maximum number of markers
+           */
+          maxMarkers: {
+            type: Number,
+            value: 0,
+            notify: true
+          },
+
+          /**
+           * If true, the knob is expanded
+           */
+          expand: {
+            type: Boolean,
+            value: false,
+            readOnly: true
+          },
+
+          /**
+           * True when the user is dragging the slider.
+           */
+          dragging: {
+            type: Boolean,
+            value: false,
+            readOnly: true,
+            notify: true
+          },
+
+          transiting: {
+            type: Boolean,
+            value: false,
+            readOnly: true
+          },
+
+          markers: {
+            type: Array,
+            readOnly: true,
+            value: function() {
+                return [];
+            }
+          },
+          key:{
+            type:String,
+            value:'value'
+          },
+          lastIsKey:{
+            type:Boolean,
+            value:false
+          },
+          /**
+           * The number that represents the current secondary progress.
+           */
+          secValue: {
+            type: Number,
+            value: 0
+          },
+
+          /**
+           * The secondary ratio
+           */
+          secRatio: {
+            type: Number,
+            readOnly: true
+          },
+          secSoul:{
+            type:String
+          },
+          secProp:{
+            type:String
+          },
+          secKey:{
+            type:String,
+            value:'value'
+          },
+          _msgId:{
+            type:String,
+            computed:'_computeMsgId(soul,prop)'
+          }
+        };
+      }
+
+      connectedCallback(){
+        super.connectedCallback();
+
+      }
+
+      _computeMsgId(soul,prop){
+        return soul + '/' + prop
+      }
+
+      hasGun() {
+        if(this.soul && this._hasGun) { // at least give me that !
+          console.log(`path(${this.prop + '.' + this.key})`)
+          this.gctx = GunUi.gun.get(this.soul).path(this.prop + '.' + this.key)
+          this.subscribe ? this._subscribe() : this._getInitialData();
+          if(this.secSoul){ this.subscribeSec ? this._subscribeSec() : this._getSecInitialData();}
+        } else {
+          GunUi.config.dev && console.info('You did not provide a soul!')
+        }
+      }
+
+       _valueChanged(value) {
+        if(!this.instant && this.gctx) {
+          this.gctx.put(value)
+        }
+        if(this.secValue) {
+          (value > this.secValue) ? this._tresholdReached() : this._normal()
+        }
+      }
+
+      _immediateValueChanged(imVal) {
+        if(this.instant) {
+          this.gctx.put(imVal)
+        }
+      }
+
+       _tresholdReached() {
+        this.fire(
+          'gunui-message',
+          {
+            id:this._msgId,
+            type:{warning:'treshold'},
+            msg:`Treshold for "${this.soul}/${this.prop}" exceeded by ${this.value - this.secValue} `,
+            soul:this.soul,
+            prop:this.prop,
+            params:{value:this.value,treshold:this.secValue}
+          }
+        )
+      }
+      _normal() {
+         this.fire(
+          'gunui-message',{type:{cancel:this._msgId}}
+        )
+      }
+
+      _getInitialData() {
+        GunUi.gun.get(this.soul).path(this.prop).val(data=>{
+          if(data) {
+            this.indeterminate = false;
+            this.value= data[this.key]
+          } else {
+            this.indeterminate = true;
+          }
+        })
+      }
+
+       _subscribe(){
+         GunUi.gun.get(this.soul).path(this.prop).on(data=>{
+           this.indeterminate = false;
+           this.value = data[this.key]
+ 
+        })
+      }
+
+      _getSecInitialData() {
+        GunUi.gun.get(this.secSoul).path(this.secProp).val(data=>{
+          if(data) {
+            this.secValue= data[this.secKey]
+          }
+        })
+      }
+
+      _subscribeSec(){
+         GunUi.gun.get(this.secSoul).path(this.secProp).on(data=>{
+          this.secValue= data[this.secKey]
+
+       })
+      }
+
+
+
+
+
+    }
+
+    window.customElements.define(GunuiSlider.is, GunuiSlider);
+  </script>
+</dom-module>

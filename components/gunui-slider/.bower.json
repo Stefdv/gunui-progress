@@ -1,0 +1,31 @@
+{
+  "name": "gunui-slider",
+  "description": "Visual control a numeric property in your Gun data",
+  "main": "gunui-slider.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^2.0.0",
+    "paper-slider": "PolymerElements/paper-slider#^2.0.4"
+  },
+  "devDependencies": {
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
+    "web-component-tester": "Polymer/web-component-tester#^6.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0",
+    "iron-component-page": "PolymerElements/iron-component-page#^3.0.1",
+    "iron-iconset-svg": "PolymerElements/iron-iconset-svg#^2.1.0",
+    "gunui-base": "*"
+  },
+  "resolutions": {
+    "polymer": "^2.0.0"
+  },
+  "homepage": "https://github.com/Stefdv/gunui-slider",
+  "version": "0.0.1",
+  "_release": "0.0.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.0.1",
+    "commit": "8fd709d09519d9380df4d27773b6bf1d91b07e16"
+  },
+  "_source": "https://github.com/Stefdv/gunui-slider.git",
+  "_target": "^0.0.1",
+  "_originalSource": "gunui-slider"
+}

@@ -1,0 +1,294 @@
+<script>
+ window.GunUi = window.GunUi || {};
+/*
+  gun-ui mixin;
+  - makes sure your element waits for Gun
+  - makes sure that your element has the right properties
+  - provides a central link to the Gun API. This way i only need 
+    to update this element when changes in the Gun API occur.
+ */
+  GunUi.MixinAPI = superClass => class GunUiMixinAPI extends superClass {
+
+    static get properties() {
+      return {
+        dev   : {
+            type:Boolean,
+            value:false,
+
+        },
+        instant: {
+          type:Boolean,
+          value:false
+        },
+        subscribe : {
+            type:Boolean,
+            value:false
+        },
+
+        soul  : { 
+            type:String,
+            observer:'_soulChanged' ,
+            reflectToAttribute:true,
+            notify:true
+        },
+
+        prop  : { 
+            type:String,
+            observer:'_propChanged' ,
+            reflectToAttribute:true,
+            notify:true
+        },
+        /**
+         * a key is used to set the value directly on the object 
+         * instead of using prop;
+         * eg: livingroom.lights.light_1 -> brightness:0.5
+         * where prop would be livingroom.lights.light_1.brightness
+         * which is bad if you just subscribe to light_1
+         * @type {Object}
+         */
+        key : {
+          type:String,
+          reflectToAttribute:true,
+          notify:true
+        },
+
+        scope : { 
+            type:String,
+            observer:'_scopeChanged',
+            reflectToAttribute:true,
+            notify:true
+        }, 
+
+        tag   : { 
+            type:String,
+            observer:'_tagChanged'  ,
+            reflectToAttribute:true,
+            notify:true
+        }, 
+
+        path  : { 
+            type:String,
+            observer:'_pathChanged' ,
+            reflectToAttribute:true,
+            notify:true
+        }, 
+
+        _sets : { 
+            type:Object,
+            notify:true
+        },
+
+        _tags : { 
+            type:Object, 
+            notify:true
+        },
+
+        _hasgun: {
+            type:Boolean,
+            value:false,
+            observer:'hasGun'
+        },
+        _fromGun: {
+           type:Boolean,
+            value:true,
+        },
+        ledColors:{
+          type:Object,
+          value:() => {
+            return {
+              red: {
+                ledColor:'#F00',
+                shadowInsetColor:'#6f0000'
+              },
+              green: {
+                ledColor:`#ABFF00`,
+                shadowInsetColor:'#304701',
+              }
+            }
+          }
+        }
+      };
+    }
+
+    ready() {
+      if(GunUi && GunUi.gun instanceof Gun){
+        //this.gun=GunUi.gun;
+        this._hasGun = true;
+        GunUi.config.help && !GunUi.logs.APIMixin && this._showExplanation();
+      } 
+      super.ready();
+    }
+
+    _getInitialData() {
+      /* You should implement '_getInitialData()'  in your element */
+    }
+      
+    _subscribe() {
+     /* You should implement '_subscribe()'  in your element */
+    }
+
+    _soulChanged(n,o){
+     /* You could implement '_soulChanged()'  in your element */
+    }
+
+    _propChanged(n,o){
+      /* You could implement '_propChanged()'  in your element */
+    }
+
+    _scopeChanged(n,o){
+     /* You could implement '_scopeChanged()'  in your element */
+    }
+
+    _tagChanged(n,o){
+
+    }
+
+    /* 
+      usage 
+      ```
+      this.fire('my-custom-event',{something:true,another:false})
+      ```
+      Then let your element listen for '(on-)my-custom-event'
+
+    */
+    fire(name,data) {
+      this.dispatchEvent(
+        new CustomEvent(name, { 
+          detail:data,
+          bubbles: true, 
+          composed: true
+        })
+      );
+    }
+
+    /* triggered when we set 'this._hasGun = true'
+       NOTE: Should be implemented in your own element!
+    */
+    hasGun() {
+      if(!GunUi.logs.hasGun) {
+        let hasgunLog = "color:black";
+        window.console.log('%c------------- TIP ----------------',hasgunLog)
+        window.console.log(`%cYou should implement the method 'hasGun()' in <${this.localName}>.`,hasgunLog);
+        window.console.log(`%c'hasGun()' is triggered by 'gun-ui-api-mixin' when your element has access to 'this.gun'. That way you'll know when your element is ready to interact with Gun.`,hasgunLog);
+        GunUi.logs.hasGun = true;
+      }
+
+    }
+
+    _showExplanation() {
+        let logColor = "color:brown;"
+        window.console.log(`%c---------- gun-ui-api-mixin ----------`,logColor)
+        window.console.log(`%cAll gun-ui elements implement 'gun-ui-api-mixin' so they all have the same basic properties and methods. Each gun-ui element accesses gun with 'this.gun'.`,logColor);
+        GunUi.logs.APIMixin = true;
+    }
+
+    /*
+      [a,b,c,d,e] -> [a,b,c,d,e,d,c,b,a]
+    */
+
+      _calculateLoopArray(arr,last) {
+        /* */
+        let result = arr.slice();   //  = [1,2,3]
+        let end = arr.length-1;   //  = 2
+        let i = end-1;      //  = 1 = [standby]
+        let l = last==-1 ? -1 : 0;   // do you want [1,2,3,2,1] (-1) or [1,2,3,2] (0)
+        while( i > l) {
+          result.push(arr[i]) 
+          i-=1;
+        }
+        return result;
+      }
+    
+    updateInGun(data) {
+     // console.log(`GunUi.gun.get(${this.soul}).path(${this.prop}).put(${JSON.stringify(data)})`)
+     data = Gun.obj.copy(data)
+      GunUi.gun.get(this.soul).path(this.prop).put(data)
+    }
+
+
+    /* HELPERS */
+
+    _toRadians(degrees){
+      //return degrees * Math.PI;
+    }
+
+    calcDistance(lat1, lng1, lat2, lng2,inMiles) {
+     
+    }
+
+    _arrToObj(a) {
+      let o = {};let i;
+      for (i = 0; i < a.length; ++i){o[i] = a[i];}
+      return o;
+    }
+
+    _objToArr(o) {
+      return Object.values(o)
+    }
+
+    _isArray(a) {
+      return Gun.list.is(a)
+    }
+
+    _isObject(o) {
+      return Gun.obj.is(o)
+    }
+
+    _isNumeric(n) {
+      return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+
+    _isMultipleOf(step,n) {
+      return n%step == 0
+    }
+
+    _isAllowed(haystack,needle) {
+      return haystack.indexOf(needle) > -1;
+    }
+    // excludes limits !
+    _isBetween(a, b,nr) {
+      let min = Math.min.apply(Math, [a,b]),
+          max = Math.max.apply(Math, [a,b]);
+      return nr > min && nr < max;
+   }
+
+    /* possible booleans : true,'true',false,'false','on','off','1','0',"active" */
+    _isValidBoolean(b) {
+      if(typeof b == 'boolean') {
+        return true
+      } else if(typeof b == 'string') {
+        switch(b.toLowerCase()) {
+          case "false": 
+          case "true": 
+          case "active":
+          case "0": 
+          case "1": 
+          case "on":
+          case "off" :return true; 
+          default: return false;
+        }
+      } 
+      return false;
+    }
+
+    _iterate(obj,stack,convertBack) {
+      for(var prop in obj) {
+        if(obj.hasOwnProperty(prop)) {
+          if(Gun.list.is(obj[prop])){
+            convertBack[stack + '.' + prop] = true;
+            obj[prop] = this._arrToObj(obj[prop])
+          } else if(Gun.obj.is) {
+            stack ? this._iterate(obj[prop], stack + '.' + prop) : this._iterate(obj[prop],prop);
+          } 
+        } 
+      } 
+      return {o:obj,c:convertBack}
+    }
+
+    _validateForGun(obj) {
+      let converBack = {};
+      return this._iterare(obj,converBack); // returns {o:obj,c:convertBack}
+    }
+  }
+
+</script>

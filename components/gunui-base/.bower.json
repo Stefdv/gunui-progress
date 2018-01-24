@@ -1,0 +1,26 @@
+{
+  "name": "gunui-base",
+  "description": "GunUi base element",
+  "main": "gunui-base.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^2.0.0"
+  },
+  "devDependencies": {
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
+    "web-component-tester": "Polymer/web-component-tester#^6.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
+  },
+  "resolutions": {
+    "polymer": "^2.0.0"
+  },
+  "homepage": "https://github.com/Stefdv/gunui-base",
+  "_release": "65f95bc817",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "65f95bc817724e813f811c640ae9577ac5cac3de"
+  },
+  "_source": "https://github.com/Stefdv/gunui-base.git",
+  "_target": "*",
+  "_originalSource": "gunui-base"
+}
