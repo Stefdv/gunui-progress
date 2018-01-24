@@ -116,10 +116,7 @@
       _computeMsgId(soul,prop){
         return soul + '/' + prop
       }
-<<<<<<< HEAD
 
-=======
->>>>>>> origin/master
       hasGun() {
         if(this.soul && this._hasGun) { // at least give me that !
           this.subscribe ? this._subscribe() : this._getInitialData();
@@ -133,10 +130,6 @@
           (value > this.secValue) ? this._tresholdReached() : this._normal()
         }
       }
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/master
       _tresholdReached() {
         this.fire(
           'gunui-message',
@@ -169,10 +162,6 @@
          GunUi.gun.get(this.soul).path(this.prop).on(data=>{
            this.indeterminate = false;
            this.value = data[this.key] || data;
-<<<<<<< HEAD
- 
-=======
->>>>>>> origin/master
         })
       }
       _getSecInitialData() {
