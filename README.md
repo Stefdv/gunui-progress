@@ -41,7 +41,7 @@ bower install gunui-progress --save
     <gunui-base></gunui-base>
 
     <!-- somewhere in your app, or in a custom element -->
-    <gunui-progress soul="lights" prop="lights.1.state" subscribe>Light 1</gunui-progress>
+    <gunui-progress soul="lights" prop="lights.1.state.bri" subscribe></gunui-progress>
 
   </body>
 </html>
